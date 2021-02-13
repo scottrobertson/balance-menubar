@@ -1,6 +1,6 @@
 {
   "name": "balancebar",
-  "version": "0.4.1",
+  "version": "0.5.1",
   "author": "Scott Robertson <scottymeuk@gmail.com>",
   "description": "View your bank balances in your Menu Bar",
   "license": "MIT",
@@ -12,8 +12,8 @@
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
     "build:web": "cross-env BUILD_TARGET=web node .electron-vue/build.js",
     "dev": "node .electron-vue/dev-runner.js",
-    "lint": "eslint --ext .js,.vue src",
-    "lint:fix": "eslint --ext .js,.vue --fix src",
+    "lint": "eslint --ext .js,.vue,.ts src",
+    "lint:fix": "eslint --ext .js,.vue,.ts --fix src",
     "pack": "npm run pack:main && npm run pack:renderer",
     "pack:main": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.main.config.js",
     "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.renderer.config.js"
@@ -84,6 +84,7 @@
     "public-ip": "^4.0.3",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
+    "secure-ls": "^1.2.6",
     "tailwindcss": "^2.0.2",
     "vue": "^2.5.16",
     "vue-clipboard2": "^0.3.1",
@@ -91,9 +92,15 @@
     "vue-moment": "^4.1.0",
     "vue-router": "^3.0.1",
     "vuex": "^3.0.1",
-    "vuex-electron": "^1.0.0"
+    "vuex-persistedstate": "^4.0.0-beta.3"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.168",
+    "@types/request-promise": "^4.1.47",
+    "@types/uuid": "^8.3.0",
+    "@types/vue-moment": "^4.0.2",
+    "@typescript-eslint/eslint-plugin": "^4.15.0",
+    "@typescript-eslint/parser": "^4.15.0",
     "ajv": "^7",
     "babel-core": "^6.26.3",
     "babel-loader": "^7",
@@ -135,6 +142,8 @@
     "prettier": "^2.2.1",
     "sass-loader": "^10",
     "style-loader": "^2",
+    "ts-loader": "^8.0.17",
+    "typescript": "^4.1.5",
     "url-loader": "^4",
     "vue-html-loader": "^1.2.4",
     "vue-loader": "^15.2.4",

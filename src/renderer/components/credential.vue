@@ -23,14 +23,16 @@
   </div>
 </template>
 
-<script>
-import { fetchDebug } from "../services/truelayer.js";
+<script lang="ts">
+import Vue, { PropType } from "vue";
+import { fetchDebug } from "../services/truelayer";
 import { getAccessToken } from "../services/secure-storage";
+import { Credential } from "../services/interfaces";
 
-export default {
+export default Vue.extend({
   props: {
     credential: {
-      type: Object,
+      type: Object as PropType<Credential>,
       required: true,
     },
   },
@@ -43,26 +45,31 @@ export default {
   },
 
   methods: {
-    async disconnectCredential() {
+    async disconnectCredential(): Promise<void> {
       await this.$store.dispatch("deleteCredential", this.credential);
       await this.$store.dispatch("refreshAccounts");
     },
-    async toggleDebugData() {
+    async toggleDebugData(): Promise<void> {
       if (this.debug) {
         this.debug = undefined;
         this.debugError = false;
       } else {
         const accessToken = await getAccessToken(this.credential);
-        this.debug = "Requesting debug info...";
 
-        try {
-          this.debug = await fetchDebug(accessToken);
-        } catch (e) {
-          this.debug = e.error;
+        if (accessToken) {
+          this.debug = "Requesting debug info...";
+
+          try {
+            this.debug = await fetchDebug(accessToken);
+          } catch (e) {
+            this.debug = e.error;
+            this.debugError = true;
+          }
+        } else {
           this.debugError = true;
         }
       }
     },
   },
-};
+});
 </script>

@@ -29,8 +29,11 @@
   </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue from "vue";
+import { ReturnedAccount, Credential } from "../services/interfaces";
+
+export default Vue.extend({
   data() {
     return {
       lastRefreshed: undefined,
@@ -38,18 +41,24 @@ export default {
   },
 
   computed: {
-    lastRefreshedAt() {
+    lastRefreshedAt(): string {
       return this.$store.getters.lastRefreshedAt;
     },
-    accounts() {
+    accounts(): ReturnedAccount[] {
       return this.$store.getters.allAccounts;
     },
-    credentials() {
+    credentials(): Credential[] {
       return this.$store.getters.allCredentials;
     },
   },
 
-  mounted() {
+  watch: {
+    lastRefreshedAt(newValue: string): void {
+      this.updateLocalRefreshedAt(newValue);
+    },
+  },
+
+  mounted(): void {
     // Keep the "last updated at" reactive.
     this.updateLocalRefreshedAt(this.lastRefreshedAt);
     setInterval(() => {
@@ -58,19 +67,19 @@ export default {
   },
 
   methods: {
-    updateLocalRefreshedAt(value) {
+    updateLocalRefreshedAt(value: string): void {
       this.lastRefreshed = this.$moment(value).fromNow();
     },
 
-    async startTrueLayerAuth() {
+    async startTrueLayerAuth(): Promise<void> {
       this.$electron.shell.openExternal(
         `https://auth.truelayer.com/?response_type=code&client_id=${this.$store.getters.truelayerClientId}&scope=info%20accounts%20balance%20cards%20offline_access&redirect_uri=balancebar://oauth&providers=uk-ob-all%20uk-oauth-all%20uk-cs-mock`
       );
     },
 
-    refreshAccounts() {
+    refreshAccounts(): void {
       this.$store.dispatch("refreshAccounts");
     },
   },
-};
+});
 </script>

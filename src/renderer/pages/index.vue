@@ -38,13 +38,15 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
 import { credentialsFromUrl } from "../services/truelayer-oauth";
 
-import Account from "../components/account";
-import Header from "../components/home-header";
+import Account from "../components/account.vue";
+import Header from "../components/home-header.vue";
+import { Credential, ReturnedAccount } from "../services/interfaces";
 
-export default {
+export default Vue.extend({
   name: "LandingPage",
 
   components: {
@@ -53,27 +55,21 @@ export default {
   },
 
   computed: {
-    hasTruelayerClient() {
+    hasTruelayerClient(): string {
       return this.$store.getters.hasTruelayerClient;
     },
-    credentials() {
+    credentials(): Credential[] {
       return this.$store.getters.allCredentials;
     },
-    accounts() {
+    accounts(): ReturnedAccount[] {
       return this.$store.getters.allAccounts;
     },
-    isConnecting() {
+    isConnecting(): boolean {
       return this.$store.getters.isConnecting;
     },
   },
 
-  watch: {
-    lastRefreshedAt(newValue, _oldValue) {
-      this.updateLocalRefreshedAt(newValue);
-    },
-  },
-
-  async mounted() {
+  async mounted(): Promise<void> {
     await this.$store.dispatch("setConnecting", false);
 
     // Electron messages from menubar app
@@ -85,11 +81,11 @@ export default {
       this.resetAll();
     });
 
-    this.$electron.ipcRenderer.on("handle-oauth", (event, url) => {
+    this.$electron.ipcRenderer.on("handle-oauth", (_event: any, url: string) => {
       this.addCredentialsFromUrl(url);
     });
 
-    this.$electron.ipcRenderer.on("goto-connections", (event) => {
+    this.$electron.ipcRenderer.on("goto-connections", () => {
       this.$router.push("/connections");
     });
 
@@ -104,7 +100,7 @@ export default {
   },
 
   methods: {
-    async addCredentialsFromUrl(url) {
+    async addCredentialsFromUrl(url: string): Promise<void> {
       console.log("oAuth callback url received:", url);
 
       this.$store.dispatch("resetAccounts");
@@ -115,20 +111,20 @@ export default {
         await this.$store.dispatch("addCredential", credentials);
       } else {
         // TODO show error
-        await this.refreshAccounts();
+        await this.$store.dispatch("refreshAccounts");
       }
 
       await this.$store.dispatch("setConnecting", false);
     },
-    refreshAccounts() {
+    refreshAccounts(): void {
       this.$store.dispatch("refreshAccounts");
     },
-    resetAll() {
+    resetAll(): void {
       this.$store.dispatch("resetAll");
       this.$router.push("/truelayer");
     },
   },
-};
+});
 </script>
 
 <style scoped>

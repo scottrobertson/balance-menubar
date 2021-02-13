@@ -3,22 +3,26 @@ import Router from "vue-router";
 
 Vue.use(Router);
 
+import Index from "../pages/index.vue";
+import Connections from "../pages/connections.vue";
+import TrueLayer from "../pages/truelayer.vue";
+
 export default new Router({
   routes: [
     {
       path: "/",
       name: "index",
-      component: require("@/pages/index").default,
+      component: Index,
     },
     {
       path: "/connections",
       name: "connections",
-      component: require("@/pages/connections").default,
+      component: Connections,
     },
     {
       path: "/truelayer",
       name: "truelayer",
-      component: require("@/pages/truelayer").default,
+      component: TrueLayer,
     },
     {
       path: "*",

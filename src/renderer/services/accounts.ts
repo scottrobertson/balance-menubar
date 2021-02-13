@@ -1,10 +1,14 @@
-import { getRefreshToken, storeAccessToken, storeRefreshToken } from "./secure-storage.js";
+"use strict";
 
-import { fetchAccountBalance, fetchCardBalance, fetchCards, fetchAccounts } from "./truelayer.js";
-import { refreshAccessToken } from "./truelayer-oauth.js";
+import { getRefreshToken, storeAccessToken, storeRefreshToken } from "./secure-storage";
 
-export async function refreshAllAccounts(truelayerClientId, credentials) {
-  let allAccounts = [];
+import { fetchAccountBalance, fetchCardBalance, fetchCards, fetchAccounts } from "./truelayer";
+import { refreshAccessToken } from "./truelayer-oauth";
+
+import { ReturnedAccount, ReturnedBank, TrueLayerCardOrAccount, Credential } from "./interfaces";
+
+export async function refreshAllAccounts(truelayerClientId: string, credentials: Credential[]): Promise<ReturnedAccount[]> {
+  const allAccounts: ReturnedAccount[] = [];
 
   if (credentials && credentials.length) {
     await Promise.all(
@@ -18,40 +22,36 @@ export async function refreshAllAccounts(truelayerClientId, credentials) {
   return allAccounts;
 }
 
-async function getAccountObject(type, credential, accessToken, object) {
+async function getAccountObject(type: string, credential: Credential, accessToken: string, object: TrueLayerCardOrAccount): Promise<ReturnedAccount> {
   console.log(`[${credential.credentials_id}] Fetching balance for ${object.account_id}`);
 
+  let balanceFormatted;
   let balance;
+  let useBalance;
 
   try {
-    if (type === "account") {
-      balance = await fetchAccountBalance(object.account_id, accessToken);
-    } else if (type === "card") {
-      balance = await fetchCardBalance(object.account_id, accessToken);
-    }
-
-    balance = balance.results[0];
-    let useBalance = balance.available;
-
-    // Use current balance for cards, and use a negative number (unless it's zero)
     if (type === "card") {
+      balance = await fetchCardBalance(object.account_id, accessToken);
+      useBalance = balance.available;
+    } else {
+      balance = await fetchAccountBalance(object.account_id, accessToken);
       useBalance = balance.current !== 0 ? -balance.current : 0;
     }
 
-    balance = new Intl.NumberFormat("gb-EN", { style: "currency", currency: balance.currency }).format(useBalance);
+    balanceFormatted = new Intl.NumberFormat("gb-EN", { style: "currency", currency: balance.currency }).format(useBalance);
   } catch (e) {
     console.error(`[${credential.credentials_id}] Account balance fetch failure: ${object.account_id}`);
-    balance = `Unable to get balance: ${e.error}`;
+    balanceFormatted = `Unable to get balance: ${e.error}`;
   }
 
   return {
     bank: bankObject(credential),
     name: object.display_name,
-    balance: balance,
+    balance: balanceFormatted,
   };
 }
 
-function bankObject(credential) {
+function bankObject(credential: Credential): ReturnedBank {
   return {
     name: credential.provider.display_name,
     icon: credential.provider.logo_uri.replace("/logo/", "/icon/"),
@@ -59,7 +59,7 @@ function bankObject(credential) {
   };
 }
 
-function noBalanceAccountObject(credential, error = "We have not been able to fetch accounts for this bank at this time. Either try again, or reconnect.") {
+function noBalanceAccountObject(credential: Credential, error = "We have not been able to fetch accounts for this bank at this time. Either try again, or reconnect."): ReturnedAccount {
   return {
     bank: bankObject(credential),
     name: "Unable to fetch accounts",
@@ -67,11 +67,11 @@ function noBalanceAccountObject(credential, error = "We have not been able to fe
   };
 }
 
-async function getAccountsForCredential(truelayerClientId, credential) {
+async function getAccountsForCredential(truelayerClientId: string, credential: Credential): Promise<ReturnedAccount[]> {
   console.log(`[${credential.credentials_id}] Processing`);
 
   let accessToken;
-  const accounts = [];
+  const accounts: ReturnedAccount[] = []
 
   const refreshToken = await getRefreshToken(credential);
 
@@ -105,13 +105,13 @@ async function getAccountsForCredential(truelayerClientId, credential) {
   return accounts;
 }
 
-async function getAccountsAndCards(accessToken, credential) {
-  let [accounts, cards] = await Promise.all([getAccounts(accessToken, credential), getCards(accessToken, credential)]);
+async function getAccountsAndCards(accessToken: string, credential: Credential): Promise<ReturnedAccount[]> {
+  const [accounts, cards] = await Promise.all([getAccounts(accessToken, credential), getCards(accessToken, credential)]);
   return [...accounts, ...cards];
 }
 
-async function getCards(accessToken, credential) {
-  const returnCards = [];
+async function getCards(accessToken: string, credential: Credential): Promise<ReturnedAccount[]> {
+  const returnCards: ReturnedAccount[] = []
   let cards;
 
   if (credential.scopes.includes("cards")) {
@@ -125,7 +125,7 @@ async function getCards(accessToken, credential) {
 
     if (cards) {
       await Promise.all(
-        cards.results.map(async (card) => {
+        cards.map(async (card) => {
           const cardObject = await getAccountObject("card", credential, accessToken, card);
           returnCards.push(cardObject);
         })
@@ -138,8 +138,9 @@ async function getCards(accessToken, credential) {
   return returnCards;
 }
 
-async function getAccounts(accessToken, credential) {
-  const returnAccounts = [];
+async function getAccounts(accessToken: string, credential: Credential): Promise<ReturnedAccount[]> {
+  const returnAccounts: ReturnedAccount[] = []
+
   let accounts;
 
   if (credential.scopes.includes("accounts")) {
@@ -153,7 +154,7 @@ async function getAccounts(accessToken, credential) {
 
     if (accounts) {
       await Promise.all(
-        accounts.results.map(async (account) => {
+        accounts.map(async (account) => {
           const accountObject = await getAccountObject("account", credential, accessToken, account);
           returnAccounts.push(accountObject);
         })

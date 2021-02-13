@@ -58,8 +58,10 @@
   </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue from "vue";
+
+export default Vue.extend({
   data() {
     return {
       clientId: undefined,
@@ -68,22 +70,22 @@ export default {
   },
 
   computed: {
-    hasTruelayerCredentials() {
+    hasTruelayerCredentials(): boolean {
       return this.$store.getters.hasTruelayerCredentials;
     },
   },
 
-  mounted() {
+  mounted(): void {
     if (this.hasTruelayerCredentials) {
       this.$router.push("/");
     }
   },
 
   methods: {
-    openLink(link) {
+    openLink(link: string): void {
       this.$electron.shell.openExternal(link);
     },
-    saveCredentials() {
+    saveCredentials(): void {
       this.$store.dispatch("setTrueLayer", {
         clientId: this.clientId,
         clientSecret: this.clientSecret,
@@ -91,5 +93,5 @@ export default {
       this.$router.push("/");
     },
   },
-};
+});
 </script>

@@ -1,15 +1,11 @@
 module.exports = {
-  purge: [
-    './src/renderer/**/*.vue'
-  ],
-  darkMode: 'media', // or 'media' or 'class'
+  purge: ["./src/renderer/**/*.vue"],
+  darkMode: "media", // or 'media' or 'class'
   theme: {
-    extend: {}
+    extend: {},
   },
   variants: {
-    extend: {}
+    extend: {},
   },
-  plugins: [
-    require('@tailwindcss/forms')
-  ]
-}
+  plugins: [require("@tailwindcss/forms")],
+};

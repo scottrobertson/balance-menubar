@@ -1,10 +1,12 @@
 import * as request from "request-promise";
 import { getTruelayerSecret } from "./secure-storage";
-import { fetchMe } from "./truelayer.js";
+import { fetchMe } from "./truelayer";
 
 const redirectUrl = "balancebar://oauth";
 
-async function exchangeCodeForToken(truelayerClientId, code) {
+import { TrueLayerAccessToken, TrueLayerCredentials } from "./interfaces";
+
+async function exchangeCodeForToken(truelayerClientId: string, code: string) {
   const requestOptions = {
     uri: `https://auth.truelayer.com/connect/token`,
     headers: {
@@ -27,7 +29,7 @@ async function exchangeCodeForToken(truelayerClientId, code) {
   };
 }
 
-export async function refreshAccessToken(truelayerClientId, refreshToken) {
+export async function refreshAccessToken(truelayerClientId: string, refreshToken: string): Promise<TrueLayerAccessToken> {
   const requestOptions = {
     uri: `https://auth.truelayer.com/connect/token`,
     headers: {
@@ -50,7 +52,7 @@ export async function refreshAccessToken(truelayerClientId, refreshToken) {
   };
 }
 
-export async function credentialsFromUrl(truelayerClientId, url) {
+export async function credentialsFromUrl(truelayerClientId: string, url: string): Promise<TrueLayerCredentials | undefined> {
   const fullUrl = new URL(url);
   const urlParams = new URLSearchParams(fullUrl.search);
   const code = urlParams.get("code");
@@ -76,10 +78,10 @@ export async function credentialsFromUrl(truelayerClientId, url) {
         console.error(e.error);
       }
 
-      if (me) {
+      if (me?.credentials_id) {
         return {
           refreshToken: tokens.refresh_token,
-          credentials: me.results[0],
+          credentials: me,
         };
       }
     }

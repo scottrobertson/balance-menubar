@@ -5,11 +5,9 @@
 </template>
 
 <script>
-export default {
-  name: "BalanceMenubar",
-};
-</script>
+import Vue from "vue";
 
-<style>
-/* CSS */
-</style>
+export default Vue.extend({
+  name: "BalanceMenubar",
+});
+</script>
